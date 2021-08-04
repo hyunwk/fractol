@@ -24,7 +24,6 @@ typedef	struct	s_img{
 	int			size_l;
 	int			bpp;
 	int			endian;
-	int			zoom;
 }				t_img;
 
 typedef	struct	s_mlx{
@@ -49,19 +48,14 @@ t_complex	init_complex(double re, double im)
 int		color_set(int iter)
 {
 	double	r;
-	double	g;
 	double	b;
-	int		color;
 
-	r = sin(0.3 * (double)iter);
-	//g = sin(0.3 * (double)iter + 3) * 127 + 128;
-	//b = sin(0.3 * (double)iter + 3) * 127 + 128;
-	g = sin(0.3 * (double)iter + 10) * 127 + 12;
-	b = sin(0.3 * (double)iter + 10) * 127 + 12;
-	color = ((int)(255.999 * r) << 16) + ((int)(255.999 * g) << 8) + ((int)(255.999 * b));
-	return (color);
+	if (iter == ITER_MAX)
+		return (0);
+	r = (((double)iter + 1) * 25) / 2;
+	b = (((double)iter + 1) * 25) / 2;
+	return (((int)(r) << 16) + (int)(b));
 }
-
 
 int		get_mandelbrot_iter(t_mlx *mlx)
 {
@@ -94,9 +88,7 @@ int		get_julia_iter(int pos_w, int pos_h, int iter, t_mlx *mlx)
 	y = ((HEIGHT / 2.0) - pos_h) * 4.0 / HEIGHT;
 	while ((pow(x, 2.0) + pow(y, 2.0) < 4) && (iter < ITER_MAX))
 	{
-		//x_new = pow(x, 2.0) - pow(y, 2.0) + c_re;
 		x_new = pow(x, 2.0) - pow(y, 2.0) + mlx->c.re;
-		//y = 2 * x * y + c_im;
 		y = 2 * x * y + mlx->c.im;
 		x = x_new;
 		iter++;
@@ -123,10 +115,8 @@ int		window_init(t_mlx *mlx)
 
 int		fractol_init(t_mlx *mlx)
 {
-	mlx->min.im = -1.0;
-	mlx->max.im = 1.0;
-	mlx->min.re = -2.0;
-	mlx->max.re = 1.0;
+	mlx->min = init_complex(-2.0, -1.0);
+	mlx->max = init_complex(1.0, 1.0);
 	return (1);
 }
 
@@ -138,7 +128,6 @@ void	put_pixel(t_img *img, int x, int y, int color)
 	*(unsigned int *)dst = color;
 }
 
-
 void	draw(t_mlx *mlx)
 {
 	int		iter;
@@ -147,8 +136,8 @@ void	draw(t_mlx *mlx)
 	int		pos_h;
 
 	mlx->factor = init_complex(
-			(mlx->max.re - mlx->min.re) / (WIDTH - 1),
-			(mlx->max.im - mlx->min.im) / (HEIGHT - 1));
+			(mlx->max.re - mlx->min.re) / WIDTH,
+			(mlx->max.im - mlx->min.im) / HEIGHT);
 	pos_h = mlx->min.im;
 	while (pos_h <= HEIGHT)
 	{
@@ -159,14 +148,7 @@ void	draw(t_mlx *mlx)
 			mlx->c.re = mlx->min.re + pos_w * mlx->factor.re;
 			iter = get_mandelbrot_iter(mlx);
 			//iter = get_julia_iter(pos_h, pos_w, 0, mlx);
-
-			if (iter < ITER_MAX)
-			{
-				put_pixel(&(mlx->img), pos_w, pos_h, color);
-				color = color_set(iter);
-			}
-			else
-				put_pixel(&(mlx->img), pos_w, pos_h, 0);
+			put_pixel(&(mlx->img), pos_w, pos_h, color_set(iter));
 			pos_w++;
 		}
 		pos_h++;
@@ -190,21 +172,20 @@ int		mouse_event(int keycode,int x, int y, t_mlx *mlx)
 	if (keycode == X_EVENT_SCROLL_UP || keycode == X_EVENT_SCROLL_DOWN)
 	{
 		pos = init_complex(
-				(double)x / (WIDTH / (mlx->max.re - mlx->min.re))
-				+ mlx->min.re,
-				(double)y / (HEIGHT / (mlx->max.im - mlx->min.im))
-				* -1 + mlx->max.im);
+				mlx->min.re + (double)x * mlx->factor.re,
+				mlx->max.im - (double)y * mlx->factor.im);
 		if (keycode == X_EVENT_SCROLL_UP)
-			zoom_rate = 1.1;
+			zoom_rate = 1.3;
 		else
-			zoom_rate = 0.9;
+			zoom_rate = 0.7;
 		reset_min_max(zoom_rate, pos, mlx);
-		//mlx_clear_window(mlx->mlx_ptr, mlx->win);
-		printf("mouse wheel %lf\n", zoom_rate);
+//		mlx_clear_window(mlx->mlx_ptr, mlx->win);
+//		printf("mouse wheel %lf\n", zoom_rate);
 		draw(mlx);
 	}
 	return (0);
 }
+
 int		key_press(int keycode)
 {
 	if (keycode == KEY_ESC)
@@ -223,8 +204,7 @@ int		main(void)
 
 	if (!window_init(&mlx))
 		return (0);
-	if (!fractol_init(&mlx))
-		return (0);
+	fractol_init(&mlx);
 	draw(&mlx);
 	mlx_hook(mlx.win, X_EVENT_KEY_PRESS, 0, key_press, 0);
 	mlx_hook(mlx.win, X_EVENT_KEY_EXIT, 0, close_window, 0);
