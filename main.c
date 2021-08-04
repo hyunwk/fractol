@@ -7,11 +7,16 @@
 #define		X_EVENT_KEY_EXIT		17
 #define		X_EVENT_SCROLL_UP		4
 #define		X_EVENT_SCROLL_DOWN		5
-#define		WIN_WIDTH				800
-#define		WIN_HEIGHT				600
+#define		WIDTH					800
+#define		HEIGHT					600
 #define		KEY_ESC					53
 #define		ITER_MAX				30
-//#define		ITER_MAX				100
+
+typedef struct	s_complex
+{
+	double		re;
+	double		im;
+}				t_complex;
 
 typedef	struct	s_img{
 	void		*img_ptr;
@@ -20,23 +25,26 @@ typedef	struct	s_img{
 	int			bpp;
 	int			endian;
 	int			zoom;
-	double		min_re;
-	double		max_re;
-	double		min_im;
-	double		max_im;
-	double		factor_re;
-	double		factor_im;
 }				t_img;
 
 typedef	struct	s_mlx{
 	void		*mlx_ptr;
 	void		*win;
-	int			zoom;
-	double		c_re;
-	double		c_im;
-
 	t_img		img;
+	t_complex	c;
+	t_complex	min;
+	t_complex	max;
+	t_complex	factor;
 }				t_mlx;
+
+t_complex	init_complex(double re, double im)
+{
+	t_complex complex;
+
+	complex.re = re;
+	complex.im = im;
+	return (complex);
+}
 
 int		color_set(int iter)
 {
@@ -55,36 +63,24 @@ int		color_set(int iter)
 }
 
 
-//int		get_mandelbrot_iter(int location_w, int location_h, int iter)
-int		get_mandelbrot_iter(int location_w, int location_h, int iter, t_img *img)
+int		get_mandelbrot_iter(t_mlx *mlx)
 {
-	double c_re;
-	double c_im;
-	double x;
-	double x_new;
-	double y;
+	int			iter;
+	t_complex	z;
 
-	//c_re = ((location_w - WIN_WIDTH / 2) * 3.0 / WIN_WIDTH) - 0.5;
-	c_re = img->min_re + location_w * img->factor_re; 
-	//c_im = ((WIN_HEIGHT / 2) - location_h) * 2.0 / WIN_HEIGHT;
-	c_im = img->min_im + location_h * img->factor_im; 
-//	printf("fat_re : %lf fat_im : %lf\n",img->factor_re, img->factor_im);
-//	printf("c_re : %lf c+im : %lf\n",c_re, c_im);
-	//x = 0;
-	x = c_re;
-	//y = 0;
-	y = c_im;
-	while ((pow(x, 2.0) + pow(y, 2.0) < 4) && (iter < ITER_MAX))
+	iter = 0;
+	z = init_complex(mlx->c.re, mlx->c.im);
+	while ((pow(z.re, 2.0) + pow(z.im, 2.0) <= 4) && (iter < ITER_MAX))
 	{
-		x_new = pow(x, 2.0) - pow(y, 2.0) + c_re;
-		y = 2 * x * y + c_im;
-		x = x_new;
+		z = init_complex(
+				pow(z.re, 2.0) - pow(z.im, 2.0) + mlx->c.re,
+				2.0 * z.re * z.im + mlx->c.im);
 		iter++;
 	}
 	return (iter);
 }
 
-int		get_julia_iter(int location_w, int location_h, int iter, t_img *img)
+int		get_julia_iter(int pos_w, int pos_h, int iter, t_mlx *mlx)
 {
 	double	c_re;
 	double	c_im;
@@ -94,12 +90,14 @@ int		get_julia_iter(int location_w, int location_h, int iter, t_img *img)
 
 	c_re = -0.7;
 	c_im = 0;
-	x = ((location_w - WIN_WIDTH / 2) * 4.0 / WIN_WIDTH);
-	y = ((WIN_HEIGHT / 2) - location_h) * 4.0 / WIN_HEIGHT;
+	x = ((pos_w - WIDTH / 2.0) * 4.0 / WIDTH);
+	y = ((HEIGHT / 2.0) - pos_h) * 4.0 / HEIGHT;
 	while ((pow(x, 2.0) + pow(y, 2.0) < 4) && (iter < ITER_MAX))
 	{
-		x_new = pow(x, 2.0) - pow(y, 2.0) + c_re;
-		y = 2 * x * y + c_im;
+		//x_new = pow(x, 2.0) - pow(y, 2.0) + c_re;
+		x_new = pow(x, 2.0) - pow(y, 2.0) + mlx->c.re;
+		//y = 2 * x * y + c_im;
+		y = 2 * x * y + mlx->c.im;
 		x = x_new;
 		iter++;
 	}
@@ -111,24 +109,26 @@ int		window_init(t_mlx *mlx)
 	mlx->mlx_ptr = mlx_init();
 	if (!mlx->mlx_ptr)
 		return (0);
-	mlx->win = mlx_new_window(mlx->mlx_ptr, WIN_WIDTH, WIN_HEIGHT, "fractol");
+	mlx->win = mlx_new_window(mlx->mlx_ptr, WIDTH, HEIGHT, "fractol");
 	if (!mlx->win)
 		return (0);
-	mlx->img.img_ptr = mlx_new_image(mlx->mlx_ptr, WIN_WIDTH, WIN_HEIGHT);
+	mlx->img.img_ptr = mlx_new_image(mlx->mlx_ptr, WIDTH, HEIGHT);
 	if (!mlx->img.img_ptr)
 		return (0);
 	mlx->img.data = mlx_get_data_addr(mlx->img.img_ptr, &mlx->img.bpp, &mlx->img.size_l, &mlx->img.endian);
 	if (!mlx->img.data)
 		return (0);
-	mlx->img.zoom = 1.0;
-	mlx->img.max_im = 1.0;
-	mlx->img.min_im = -1.0;
-	mlx->img.max_re = 1.0;
-	mlx->img.min_re = -2.0;
 	return (1);
 }
 
-
+int		fractol_init(t_mlx *mlx)
+{
+	mlx->min.im = -1.0;
+	mlx->max.im = 1.0;
+	mlx->min.re = -2.0;
+	mlx->max.re = 1.0;
+	return (1);
+}
 
 void	put_pixel(t_img *img, int x, int y, int color)
 {
@@ -139,73 +139,70 @@ void	put_pixel(t_img *img, int x, int y, int color)
 }
 
 
-void	start_draw(t_img *img, t_mlx *mlx)
+void	draw(t_mlx *mlx)
 {
 	int		iter;
 	int		color;
-	int		location_w;
-	int		location_h;
+	int		pos_w;
+	int		pos_h;
 
-	mlx_clear_window (mlx->mlx_ptr, mlx->win);
-	img->factor_re = (img->max_re - img->min_re) / WIN_WIDTH;
-	img->factor_im = (img->max_im - img->min_im) / WIN_HEIGHT;
-	//location_h = 0;
-	location_h = mlx->img.min_im;
-	while (location_h <= WIN_HEIGHT)
-	//while (location_h <= mlx->img.max_im)
+	mlx->factor = init_complex(
+			(mlx->max.re - mlx->min.re) / (WIDTH - 1),
+			(mlx->max.im - mlx->min.im) / (HEIGHT - 1));
+	pos_h = mlx->min.im;
+	while (pos_h <= HEIGHT)
 	{
-		//location_w = 0;
-		location_w = mlx->img.min_re;
-		while (location_w <= WIN_WIDTH)
-		//while (location_w <= mlx->img.max_re)
+		mlx->c.im = mlx->max.im - pos_h * mlx->factor.im;
+		pos_w = mlx->min.re;
+		while (pos_w <= WIDTH)
 		{
-			iter = get_mandelbrot_iter(location_w, location_h, 0, img);
+			mlx->c.re = mlx->min.re + pos_w * mlx->factor.re;
+			iter = get_mandelbrot_iter(mlx);
+			//iter = get_julia_iter(pos_h, pos_w, 0, mlx);
 
 			if (iter < ITER_MAX)
 			{
-				put_pixel(img, location_w, location_h, color);
+				put_pixel(&(mlx->img), pos_w, pos_h, color);
 				color = color_set(iter);
 			}
 			else
-				put_pixel(img, location_w, location_h, 0);
-
-			//location_w++;
-			location_w += img->factor_re;
+				put_pixel(&(mlx->img), pos_w, pos_h, 0);
+			pos_w++;
 		}
-		//location_h++;
-		location_h += img->factor_im;
+		pos_h++;
 	}
+	mlx_put_image_to_window(mlx->mlx_ptr, mlx->win, mlx->img.img_ptr, 0, 0);
 }
+
+void	reset_min_max(double zoom_rate, t_complex pos, t_mlx *mlx)
+{
+	mlx->max.re = pos.re + (mlx->max.re - pos.re) * zoom_rate;
+	mlx->min.re = pos.re + (mlx->min.re - pos.re) * zoom_rate;
+	mlx->max.im = pos.im + (mlx->max.im - pos.im) * zoom_rate;
+	mlx->min.im = pos.im + (mlx->min.im - pos.im) * zoom_rate;
+}
+
 int		mouse_event(int keycode,int x, int y, t_mlx *mlx)
 {
-	int temp;
+	t_complex pos;
 	double zoom_rate;
 
-	temp = 0;
-	if (keycode == X_EVENT_SCROLL_UP)
+	if (keycode == X_EVENT_SCROLL_UP || keycode == X_EVENT_SCROLL_DOWN)
 	{
-		temp++;
-		zoom_rate = 1.5;
+		pos = init_complex(
+				(double)x / (WIDTH / (mlx->max.re - mlx->min.re))
+				+ mlx->min.re,
+				(double)y / (HEIGHT / (mlx->max.im - mlx->min.im))
+				* -1 + mlx->max.im);
+		if (keycode == X_EVENT_SCROLL_UP)
+			zoom_rate = 1.1;
+		else
+			zoom_rate = 0.9;
+		reset_min_max(zoom_rate, pos, mlx);
+		//mlx_clear_window(mlx->mlx_ptr, mlx->win);
+		printf("mouse wheel %lf\n", zoom_rate);
+		draw(mlx);
 	}
-	else if (keycode == X_EVENT_SCROLL_DOWN)
-	{
-		temp--;
-		zoom_rate = 0.5;
-	}
-	else
-		return (0);
-	//mlx->img.zoom *= zoom_rate;
-//	mlx->img.max_re *= mlx->img.zoom;
-//	mlx->img.min_re *= mlx->img.zoom;
-//	mlx->img.max_im *= mlx->img.zoom;
-//	mlx->img.min_im *= mlx->img.zoom;
-	mlx->img.max_re *= zoom_rate;
-	mlx->img.min_re *= zoom_rate;
-	mlx->img.max_im *= zoom_rate;
-	mlx->img.min_im *= zoom_rate;
-
-	printf("temp %d\n", temp);
-	start_draw(&(mlx->img), mlx);
 	return (0);
 }
 int		key_press(int keycode)
@@ -226,8 +223,9 @@ int		main(void)
 
 	if (!window_init(&mlx))
 		return (0);
-	start_draw(&mlx.img, &mlx);
-	mlx_put_image_to_window(mlx.mlx_ptr, mlx.win, mlx.img.img_ptr, 0, 0);
+	if (!fractol_init(&mlx))
+		return (0);
+	draw(&mlx);
 	mlx_hook(mlx.win, X_EVENT_KEY_PRESS, 0, key_press, 0);
 	mlx_hook(mlx.win, X_EVENT_KEY_EXIT, 0, close_window, 0);
 	mlx_hook(mlx.win, X_EVENT_SCROLL_UP, 0, mouse_event, &mlx);
