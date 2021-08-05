@@ -2,24 +2,21 @@
 #include	<stdio.h>
 #include	<stdlib.h>
 
-#define		X_EVENT_KEY_PRESS		2
-#define		X_EVENT_KEY_RELEASE     3
-#define		X_EVENT_KEY_EXIT		17
-#define		X_EVENT_SCROLL_UP		4
-#define		X_EVENT_SCROLL_DOWN		5
+#define		KEY_EXIT		17
+#define		KEY_ESC			53
+#define		KEY_PRESS		2
+#define		SCROLL_UP		4
+#define		SCROLL_DOWN		5
 
-#define		A						0
-#define		B						11
-#define		C						8
+#define		C				8
 
-#define		LEFT					123
-#define		RIGHT					124
-#define		DOWN					125
-#define		UP						126
+#define		LEFT			123
+#define		RIGHT			124
+#define		DOWN			125
+#define		UP				126
 
-#define		WIDTH					800
-#define		HEIGHT					600
-#define		KEY_ESC					53
+#define		WIDTH			800
+#define		HEIGHT			600
 
 typedef struct	s_complex
 {
@@ -39,6 +36,7 @@ typedef	struct	s_f{
 	void		*ptr;
 	void		*win;
 	double		zoom;
+	int			color_style;
 	int			max_iter;
 	int			(*func)(struct s_f*);
 	t_img		img;
@@ -58,29 +56,37 @@ t_complex	init_complex(double re, double im)
 	complex.im = im;
 	return (complex);
 }
+#include <math.h>
 
-int		color_set(int key, int num, t_f *f)
+int		color_set(int iter, t_f *f)
 {
-//	double	r;
-//	double	g;
-//	double	b;
+	double t;
+	int red;
+	int green;
+	int blue;
 
-	int r;
-	int g;
-	int b;
-	if (!key)
+	if (iter == f->max_iter)
+		return (0x00000000);
+	if (f->color_style == 0)
 	{
-		if (num == f->max_iter)
-			return (0);
-		r = (num * 233) / 7;
-		g = (num * 243) / 7;
-		b = (num * 253) / 7;
-	//	r = (((double)num+ 1) * 25) / 2;
-	//	b = (((double)num + 1) * 25) / 2;
-		//return (((int)(r) << 16) + (int)(b));
-		return ((r << 16) + (g << 8) + b);
+		t = ( double )iter/ ( double )f->max_iter;
+		red = ( int ) ( 9 * ( 1 - t) * pow (t, 3 ) * 255);
+		green = ( int ) ( 15 * pow (( 1 - t), 2) * pow (t, 2 ) * 255);
+		blue = ( int ) ( 8.5 * pow (( 1 - t), 3) * t * 255);
 	}
-	return (0x2f3a20);
+	else if (f->color_style == 1)
+	{
+		red = sin(0.3 * (double)iter);
+		green = sin(0.3 * (double)iter + 3) * 127 + 128;
+		blue = sin(0.3 * (double)iter + 3) * 127 + 128;
+	}
+	else if (f->color_style == 2)
+	{
+		red = (((double)iter + 1) * 25) / 2;
+		green = 0;
+		blue = (((double)iter + 1) * 25) / 2;
+	}
+	return ((red << 16) + (green << 8) + blue);
 }
 
 int		mandelbrot(t_f *f)
@@ -163,6 +169,7 @@ int		init_window(t_f *f)
 	f->img.data = mlx_get_data_addr(f->img.ptr, &f->img.bpp, &f->img.size_l, &f->img.endian);
 	if (!f->img.data)
 		return (0);
+	mlx_string_put(f->ptr, f->win, 100, 100, 0x00FFFFFF, "C : change color");
 	return (1);
 }
 
@@ -170,6 +177,7 @@ void	init_fractal(t_f *f)
 {
 	f->zoom = 1.0;
 	f->max_iter = 100;
+	f->color_style = 0;
 	f->min = init_complex(-2.0, -1.0);
 	f->max = init_complex(1.0, 1.0);
 }
@@ -182,7 +190,7 @@ void	put_pixel(int x, int y, int color, t_f *f)
 	*(unsigned int *)dst = color;
 }
 
-void	draw(t_f *f, int key)
+void	draw(t_f *f)
 {
 	int		iter;
 	int		color;
@@ -200,7 +208,7 @@ void	draw(t_f *f, int key)
 		while (x <= WIDTH)
 		{
 			f->c.re = f->min.re + x * f->factor.re;
-			put_pixel(x, y, color_set(key, f->func(f), f), f);
+			put_pixel(x, y, color_set(f->func(f), f), f);
 			x++;
 		}
 		y++;
@@ -221,12 +229,12 @@ int		mouse_event(int key,int x, int y, t_f *f)
 	t_complex pos;
 	double		zoom_rate;	
 
-	if (key == X_EVENT_SCROLL_UP || key == X_EVENT_SCROLL_DOWN)
+	if (key == SCROLL_UP || key == SCROLL_DOWN)
 	{
 		pos = init_complex(
 				f->min.re + (double)x * f->factor.re,
 				f->min.im + (double)y * f->factor.im);
-		if (key == X_EVENT_SCROLL_UP)
+		if (key == SCROLL_UP)
 		{
 			if (f->zoom >= 2)
 				return (0);
@@ -245,7 +253,7 @@ int		mouse_event(int key,int x, int y, t_f *f)
 		printf("max.re :%f\nmin.re :%f\n max.im :%f\n min.im :%f\n",
 				f->max.re, f->min.re,f->max.im, f->min.im);
 
-		draw(f, 0);
+		draw(f);
 	}
 	return (0);
 }
@@ -264,7 +272,7 @@ void move(int key, t_f *f)
 	{
 		f->max.re += factor.re * 0.05;
 		f->min.re += factor.re * 0.05;
-	}	
+	}
 	else if(key == DOWN)
 	{
 		f->max.im += factor.im * 0.05;
@@ -275,28 +283,21 @@ void move(int key, t_f *f)
 		f->max.im -= factor.im * 0.05;
 		f->min.im -= factor.im * 0.05;
 	}
-	draw(f, 0);
+	draw(f);
 }
 
 int		key_press(int key, t_f *f)
 {
 	if (key == KEY_ESC)
 		exit(0);
-	if (key == A || key == B || key == C)
+	else if (key == C)
 	{
-		//color_set((key * 20) /7, f);
-		//color_set((key * 20) /7, f);
-		draw(f, key);
+		f->color_style = (f->color_style + 1) % 3;
+		draw(f);
 	}
-
-	if (key == LEFT || key == RIGHT || key == DOWN || key == UP)
+	else if (key == LEFT || key == RIGHT || key == DOWN || key == UP)
 		move(key, f);
 	return(0);
-}
-
-int		key_release(int key, t_f *f)
-{
-	;	
 }
 
 int		close_window(int key)
@@ -330,11 +331,10 @@ int		check_argv(t_f *f, int argc, char **argv)
 
 void	hook_loop(t_f *f)
 {
-	mlx_hook(f->win, X_EVENT_KEY_PRESS, 0, key_press, f);
-	mlx_hook(f->win, X_EVENT_KEY_RELEASE, 0, key_release, f);
-	mlx_hook(f->win, X_EVENT_SCROLL_UP, 0, mouse_event, f);
-	mlx_hook(f->win, X_EVENT_SCROLL_DOWN, 0, mouse_event, f);
-	mlx_hook(f->win, X_EVENT_KEY_EXIT, 0, close_window, 0);
+	mlx_hook(f->win, KEY_PRESS, 0, key_press, f);
+	mlx_hook(f->win, SCROLL_UP, 0, mouse_event, f);
+	mlx_hook(f->win, SCROLL_DOWN, 0, mouse_event, f);
+	mlx_hook(f->win, KEY_EXIT, 0, close_window, 0);
 	mlx_loop(f->ptr);
 }
 
@@ -345,6 +345,6 @@ int		main(int argc, char **argv)
 	if (!init_window(&f) || !check_argv(&f, argc, argv))
 		return (0);
 	init_fractal(&f);
-	draw(&f, 0);
+	draw(&f);
 	hook_loop(&f);
 }
