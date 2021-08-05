@@ -59,16 +59,28 @@ t_complex	init_complex(double re, double im)
 	return (complex);
 }
 
-int		color_set(int iter, t_f *f)
+int		color_set(int key, int num, t_f *f)
 {
-	double	r;
-	double	b;
+//	double	r;
+//	double	g;
+//	double	b;
 
-	if (iter == f->max_iter)
-		return (0);
-	r = (((double)iter + 1) * 25) / 2;
-	b = (((double)iter + 1) * 25) / 2;
-	return (((int)(r) << 16) + (int)(b));
+	int r;
+	int g;
+	int b;
+	if (!key)
+	{
+		if (num == f->max_iter)
+			return (0);
+		r = (num * 233) / 7;
+		g = (num * 243) / 7;
+		b = (num * 253) / 7;
+	//	r = (((double)num+ 1) * 25) / 2;
+	//	b = (((double)num + 1) * 25) / 2;
+		//return (((int)(r) << 16) + (int)(b));
+		return ((r << 16) + (g << 8) + b);
+	}
+	return (0x2f3a20);
 }
 
 int		mandelbrot(t_f *f)
@@ -170,7 +182,7 @@ void	put_pixel(int x, int y, int color, t_f *f)
 	*(unsigned int *)dst = color;
 }
 
-void	draw(t_f *f)
+void	draw(t_f *f, int key)
 {
 	int		iter;
 	int		color;
@@ -188,7 +200,7 @@ void	draw(t_f *f)
 		while (x <= WIDTH)
 		{
 			f->c.re = f->min.re + x * f->factor.re;
-			put_pixel(x, y, color_set(f->func(f), f), f);
+			put_pixel(x, y, color_set(key, f->func(f), f), f);
 			x++;
 		}
 		y++;
@@ -230,24 +242,19 @@ int		mouse_event(int key,int x, int y, t_f *f)
 		interpolate(zoom_rate, pos, f);
 		mlx_clear_window(f->ptr, f->win);
 		printf("zoom rate : %f max_iter :%d\n", f->zoom, f->max_iter);
-		draw(f);
+		printf("max.re :%f\nmin.re :%f\n max.im :%f\n min.im :%f\n",
+				f->max.re, f->min.re,f->max.im, f->min.im);
+
+		draw(f, 0);
 	}
 	return (0);
-}
-
-double	ft_abs(double n)
-{
-	if (n < 0)
-		return (-n);
-	else
-		return (n);
 }
 
 void move(int key, t_f *f)
 {
 	t_complex factor;
 
-	factor = init_complex(ft_abs(f->max.re - f->min.re), ft_abs(f->max.im - f->min.im));
+	factor = init_complex(f->max.re - f->min.re, f->max.im - f->min.im);
 	if (key == LEFT)
 	{
 		f->max.re -= factor.re * 0.05;
@@ -268,7 +275,7 @@ void move(int key, t_f *f)
 		f->max.im -= factor.im * 0.05;
 		f->min.im -= factor.im * 0.05;
 	}
-	draw(f);
+	draw(f, 0);
 }
 
 int		key_press(int key, t_f *f)
@@ -276,7 +283,12 @@ int		key_press(int key, t_f *f)
 	if (key == KEY_ESC)
 		exit(0);
 	if (key == A || key == B || key == C)
-		color_set(key, f);
+	{
+		//color_set((key * 20) /7, f);
+		//color_set((key * 20) /7, f);
+		draw(f, key);
+	}
+
 	if (key == LEFT || key == RIGHT || key == DOWN || key == UP)
 		move(key, f);
 	return(0);
@@ -333,6 +345,6 @@ int		main(int argc, char **argv)
 	if (!init_window(&f) || !check_argv(&f, argc, argv))
 		return (0);
 	init_fractal(&f);
-	draw(&f);
+	draw(&f, 0);
 	hook_loop(&f);
 }
