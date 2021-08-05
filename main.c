@@ -10,6 +10,8 @@
 #define		HEIGHT					600
 #define		KEY_ESC					53
 
+
+
 typedef struct	s_complex
 {
 	double		re;
@@ -25,16 +27,19 @@ typedef	struct	s_img{
 }				t_img;
 
 typedef	struct	s_mlx{
-	void		*mlx_ptr;
+	void		*ptr;
 	void		*win;
 	double		zoom;
 	int			max_iter;
+	int			(*func)(struct s_mlx*);
 	t_img		img;
 	t_complex	c;
 	t_complex	min;
 	t_complex	max;
 	t_complex	factor;
 }				t_mlx;
+
+int					ft_strcmp(const char *s1, const char *s2);
 
 t_complex	init_complex(double re, double im)
 {
@@ -81,7 +86,7 @@ int		get_mandelbrot_iter(t_mlx *mlx)
 	return (iter);
 }
 
-int		get_mandelbar_iter(t_mlx *mlx)
+int		get_tricorn_iter(t_mlx *mlx)
 {
 	int			iter;
 	t_complex	z;
@@ -123,15 +128,16 @@ int		get_julia_iter(t_mlx *mlx)
 	return (iter);
 }
 
+//t_mlx	*window_init()
 int		window_init(t_mlx *mlx)
 {
-	mlx->mlx_ptr = mlx_init();
-	if (!mlx->mlx_ptr)
+	mlx->ptr = mlx_init();
+	if (!mlx->ptr)
 		return (0);
-	mlx->win = mlx_new_window(mlx->mlx_ptr, WIDTH, HEIGHT, "fractol");
+	mlx->win = mlx_new_window(mlx->ptr, WIDTH, HEIGHT, "fractol");
 	if (!mlx->win)
 		return (0);
-	mlx->img.ptr = mlx_new_image(mlx->mlx_ptr, WIDTH, HEIGHT);
+	mlx->img.ptr = mlx_new_image(mlx->ptr, WIDTH, HEIGHT);
 	if (!mlx->img.ptr)
 		return (0);
 	mlx->img.data = mlx_get_data_addr(mlx->img.ptr, &mlx->img.bpp, &mlx->img.size_l, &mlx->img.endian);
@@ -167,56 +173,55 @@ void	draw(t_mlx *mlx)
 	mlx->factor = init_complex(
 			(mlx->max.re - mlx->min.re) / WIDTH,
 			(mlx->max.im - mlx->min.im) / HEIGHT);
-	y = mlx->min.im;
-	while (y <= HEIGHT)
+	y = mlx->min.im - 1;
+	while (++y <= HEIGHT)
 	{
 		mlx->c.im = mlx->min.im + y * mlx->factor.im;
-		x = mlx->min.re;
-		while (x <= WIDTH)
+		x = mlx->min.re - 1;
+		while (++x <= WIDTH)
 		{
 			mlx->c.re = mlx->min.re + x * mlx->factor.re;
-			//iter = get_mandelbrot_iter(mlx);
-			//iter = get_julia_iter(mlx);
-			iter = get_mandelbar_iter(mlx);
+			iter = mlx->func(mlx);
 			put_pixel(&(mlx->img), x, y, color_set(iter, mlx));
-			x++;
 		}
-		y++;
 	}
-	mlx_put_image_to_window(mlx->mlx_ptr, mlx->win, mlx->img.ptr, 0, 0);
+	mlx_put_image_to_window(mlx->ptr, mlx->win, mlx->img.ptr, 0, 0);
 }
 
-void	reset_min_max(t_complex pos, t_mlx *mlx)
+void	reset_min_max(double zoom_rate, t_complex pos, t_mlx *mlx)
 {
-	mlx->max.re = pos.re + (mlx->max.re - pos.re) * mlx->zoom;
-	mlx->min.re = pos.re + (mlx->min.re - pos.re) * mlx->zoom;
-	mlx->max.im = pos.im + (mlx->max.im - pos.im) * mlx->zoom;
-	mlx->min.im = pos.im + (mlx->min.im - pos.im) * mlx->zoom;
+	mlx->max.re = pos.re + (mlx->max.re - pos.re) * zoom_rate;
+	mlx->min.re = pos.re + (mlx->min.re - pos.re) * zoom_rate;
+	mlx->max.im = pos.im + (mlx->max.im - pos.im) * zoom_rate;
+	mlx->min.im = pos.im + (mlx->min.im - pos.im) * zoom_rate;
 }
 
 int		mouse_event(int keycode,int x, int y, t_mlx *mlx)
 {
 	t_complex pos;
-	
+	double		zoom_rate;	
+
 	if (keycode == X_EVENT_SCROLL_UP || keycode == X_EVENT_SCROLL_DOWN)
 	{
 		pos = init_complex(
 				mlx->min.re + (double)x * mlx->factor.re,
 				mlx->min.im + (double)y * mlx->factor.im);
 		if (keycode == X_EVENT_SCROLL_UP)
-			//mlx->zoom *= 1.02;
-			mlx->zoom = 1.2;
+		{
+			if (mlx->zoom >= 2)
+				return (0);
+			mlx->zoom *= 1.2;
+			zoom_rate = 1.2;
+		}
 		else
 		{
-			//mlx->zoom *= 0.98;
-			mlx->zoom = 0.8;
-			mlx->max_iter += 10;
+			mlx->zoom *= 0.8;
+			zoom_rate = 0.8;
+			mlx->max_iter += 20;
 		}
-		if (mlx->zoom >= 2)
-			return (0);
-		reset_min_max(pos, mlx);
-		mlx_clear_window(mlx->mlx_ptr, mlx->win);
-		printf("zoom rate : %lf max_iter :%d\n", mlx->zoom, mlx->max_iter);
+		reset_min_max(zoom_rate, pos, mlx);
+		mlx_clear_window(mlx->ptr, mlx->win);
+		printf("zoom rate : %f max_iter :%d\n", mlx->zoom, mlx->max_iter);
 		draw(mlx);
 	}
 	return (0);
@@ -234,18 +239,46 @@ int		close_window(int keycode)
 	exit(0);
 }
 
-int		main(void)
+int		check_argv(t_mlx *mlx, int argc, char **argv)
+{
+	if (argc == 2)
+	{
+		if (!ft_strcmp(argv[1], "mandelbrot"))
+		{
+			mlx->func = &get_mandelbrot_iter;
+			return (1);
+		}
+		else if (!ft_strcmp(argv[1], "julia"))
+		{
+			mlx->func = &get_julia_iter;
+			return (1);
+		}
+		else if (!ft_strcmp(argv[1], "tricorn"))
+		{
+			mlx->func = &get_tricorn_iter;
+			return (1);
+		}
+	}
+	printf("Choose fractal \n* mandelbrot \n* julia \n* tricorn\n");
+	return (0);
+}
+
+void	hooks(t_mlx *mlx)
+{
+	mlx_hook(mlx->win, X_EVENT_KEY_PRESS, 0, key_press, 0);
+	mlx_hook(mlx->win, X_EVENT_KEY_EXIT, 0, close_window, 0);
+	mlx_hook(mlx->win, X_EVENT_SCROLL_UP, 0, mouse_event, mlx);
+	mlx_hook(mlx->win, X_EVENT_SCROLL_DOWN, 0, mouse_event, mlx);
+	mlx_loop(mlx->ptr);
+}
+
+int		main(int argc, char **argv)
 {
 	t_mlx	mlx;
 
-	if (!window_init(&mlx))
+	if (!window_init(&mlx) || !check_argv(&mlx, argc, argv))
 		return (0);
 	fractol_init(&mlx);
 	draw(&mlx);
-	mlx_hook(mlx.win, X_EVENT_KEY_PRESS, 0, key_press, 0);
-	mlx_hook(mlx.win, X_EVENT_KEY_EXIT, 0, close_window, 0);
-	mlx_hook(mlx.win, X_EVENT_SCROLL_UP, 0, mouse_event, &mlx);
-	mlx_hook(mlx.win, X_EVENT_SCROLL_DOWN, 0, mouse_event, &mlx);
-	mlx_loop(mlx.mlx_ptr);
-	return (0);
+	hooks(&mlx);
 }
