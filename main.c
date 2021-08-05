@@ -1,7 +1,7 @@
 #include	"mlx/mlx.h"
 #include	<stdio.h>
 #include	<stdlib.h>
-
+#include <math.h>
 #define		KEY_EXIT		17
 #define		KEY_ESC			53
 #define		KEY_PRESS		2
@@ -50,29 +50,28 @@ int					ft_strcmp(const char *s1, const char *s2);
 
 t_complex	init_complex(double re, double im)
 {
-	t_complex complex;
+	t_complex	complex;
 
 	complex.re = re;
 	complex.im = im;
 	return (complex);
 }
-#include <math.h>
 
-int		color_set(int iter, t_f *f)
+int	color_set(int iter, t_f *f)
 {
-	double t;
-	int red;
-	int green;
-	int blue;
+	double	t;
+	int		red;
+	int		green;
+	int		blue;
 
 	if (iter == f->max_iter)
 		return (0x00000000);
 	if (f->color_style == 0)
 	{
-		t = ( double )iter/ ( double )f->max_iter;
-		red = ( int ) ( 9 * ( 1 - t) * pow (t, 3 ) * 255);
-		green = ( int ) ( 15 * pow (( 1 - t), 2) * pow (t, 2 ) * 255);
-		blue = ( int ) ( 8.5 * pow (( 1 - t), 3) * t * 255);
+		t = (double)iter / (double)f->max_iter;
+		red = (int)(9 * (1 - t) * pow (t, 3) * 255);
+		green = (int)(15 * pow((1 - t), 2) * pow(t, 2) * 255);
+		blue = (int)(8.5 * pow((1 - t), 3) * t * 255);
 	}
 	else if (f->color_style == 1)
 	{
@@ -89,7 +88,7 @@ int		color_set(int iter, t_f *f)
 	return ((red << 16) + (green << 8) + blue);
 }
 
-int		mandelbrot(t_f *f)
+int	mandelbrot(t_f *f)
 {
 	int			iter;
 	double		x;
@@ -113,7 +112,7 @@ int		mandelbrot(t_f *f)
 	return (iter);
 }
 
-int		tricorn(t_f *f)
+int	tricorn(t_f *f)
 {
 	int			iter;
 	t_complex	z;
@@ -133,7 +132,7 @@ int		tricorn(t_f *f)
 	return (iter);
 }
 
-int		julia(t_f *f)
+int	julia(t_f *f)
 {
 	int			iter;
 	t_complex	z;
@@ -155,7 +154,7 @@ int		julia(t_f *f)
 	return (iter);
 }
 
-int		init_window(t_f *f)
+int	init_window(t_f *f)
 {
 	f->ptr = mlx_init();
 	if (!f->ptr)
@@ -166,7 +165,8 @@ int		init_window(t_f *f)
 	f->img.ptr = mlx_new_image(f->ptr, WIDTH, HEIGHT);
 	if (!f->img.ptr)
 		return (0);
-	f->img.data = mlx_get_data_addr(f->img.ptr, &f->img.bpp, &f->img.size_l, &f->img.endian);
+	f->img.data = mlx_get_data_addr(f->img.ptr, &f->img.bpp,\
+	&f->img.size_l, &f->img.endian);
 	if (!f->img.data)
 		return (0);
 	mlx_string_put(f->ptr, f->win, 100, 100, 0x00FFFFFF, "C : change color");
@@ -200,11 +200,11 @@ void	draw(t_f *f)
 	f->factor = init_complex(
 			(f->max.re - f->min.re) / WIDTH,
 			(f->max.im - f->min.im) / HEIGHT);
-	y = 0; 
+	y = 0;
 	while (y <= HEIGHT)
 	{
 		f->c.im = f->min.im + y * f->factor.im;
-		x = 0; 
+		x = 0;
 		while (x <= WIDTH)
 		{
 			f->c.re = f->min.re + x * f->factor.re;
@@ -224,9 +224,9 @@ void	interpolate(double zoom_rate, t_complex pos, t_f *f)
 	f->min.im = pos.im + (f->min.im - pos.im) * zoom_rate;
 }
 
-int		mouse_event(int key,int x, int y, t_f *f)
+int	mouse_event(int key, int x, int y, t_f *f)
 {
-	t_complex pos;
+	t_complex	pos;
 	double		zoom_rate;	
 
 	if (key == SCROLL_UP || key == SCROLL_DOWN)
@@ -236,8 +236,8 @@ int		mouse_event(int key,int x, int y, t_f *f)
 				f->min.im + (double)y * f->factor.im);
 		if (key == SCROLL_UP)
 		{
-			if (f->zoom >= 2)
-				return (0);
+//			if (f->zoom >= 2)
+//				return (0);
 			f->zoom *= 1.2;
 			zoom_rate = 1.2;
 		}
@@ -250,9 +250,6 @@ int		mouse_event(int key,int x, int y, t_f *f)
 		interpolate(zoom_rate, pos, f);
 		mlx_clear_window(f->ptr, f->win);
 		printf("zoom rate : %f max_iter :%d\n", f->zoom, f->max_iter);
-		printf("max.re :%f\nmin.re :%f\n max.im :%f\n min.im :%f\n",
-				f->max.re, f->min.re,f->max.im, f->min.im);
-
 		draw(f);
 	}
 	return (0);
@@ -260,7 +257,7 @@ int		mouse_event(int key,int x, int y, t_f *f)
 
 void move(int key, t_f *f)
 {
-	t_complex factor;
+	t_complex	factor;
 
 	factor = init_complex(f->max.re - f->min.re, f->max.im - f->min.im);
 	if (key == LEFT)
@@ -268,17 +265,17 @@ void move(int key, t_f *f)
 		f->max.re -= factor.re * 0.05;
 		f->min.re -= factor.re * 0.05;
 	}
-	else if (key == RIGHT) 
+	else if (key == RIGHT)
 	{
 		f->max.re += factor.re * 0.05;
 		f->min.re += factor.re * 0.05;
 	}
-	else if(key == DOWN)
+	else if (key == DOWN)
 	{
 		f->max.im += factor.im * 0.05;
 		f->min.im += factor.im * 0.05;
 	}	
-	else if(key == UP)
+	else if (key == UP)
 	{
 		f->max.im -= factor.im * 0.05;
 		f->min.im -= factor.im * 0.05;
@@ -286,7 +283,7 @@ void move(int key, t_f *f)
 	draw(f);
 }
 
-int		key_press(int key, t_f *f)
+int	key_press(int key, t_f *f)
 {
 	if (key == KEY_ESC)
 		exit(0);
@@ -297,15 +294,15 @@ int		key_press(int key, t_f *f)
 	}
 	else if (key == LEFT || key == RIGHT || key == DOWN || key == UP)
 		move(key, f);
-	return(0);
+	return (0);
 }
 
-int		close_window(int key)
+int	close_window(int key)
 {
 	exit(0);
 }
 
-int		check_argv(t_f *f, int argc, char **argv)
+int	check_argv(t_f *f, int argc, char **argv)
 {
 	if (argc == 2)
 	{
@@ -329,7 +326,7 @@ int		check_argv(t_f *f, int argc, char **argv)
 	return (0);
 }
 
-void	hook_loop(t_f *f)
+void hook_loop(t_f *f)
 {
 	mlx_hook(f->win, KEY_PRESS, 0, key_press, f);
 	mlx_hook(f->win, SCROLL_UP, 0, mouse_event, f);
@@ -338,7 +335,7 @@ void	hook_loop(t_f *f)
 	mlx_loop(f->ptr);
 }
 
-int		main(int argc, char **argv)
+int	main(int argc, char **argv)
 {
 	t_f	f;
 
