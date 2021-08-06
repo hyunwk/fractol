@@ -3,7 +3,7 @@ all:
 	#arch -x86_64 gcc *.c -Imlx -Lmlx -lmlx -framework OpenGL -framework Appkit
 	#gcc *.c -Imlx -Lmlx -lmlx -framework OpenGL -framework Appkit
 	gcc *.c -g -Imlx -Lmlx -lmlx -framework OpenGL -framework Appkit
-	./a.out
+	./a.out mandelbrot
 
 clean :
 	rm mlx/*.o mlx/libmlx.a
