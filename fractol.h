@@ -1,30 +1,47 @@
-#include	"mlx/mlx.h"
-#include	<stdio.h>
-#include	<stdlib.h>
-#include	<math.h>
-#define		KEY_EXIT		17
-#define		KEY_ESC			53
-#define		KEY_PRESS		2
-#define		SCROLL_UP		4
-#define		SCROLL_DOWN		5
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   fractol.h                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hyunwkim <hyunwkim@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2021/08/06 13:00:19 by hyunwkim          #+#    #+#             */
+/*   Updated: 2021/08/06 13:23:38 by hyunwkim         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-#define		LEFT			123
-#define		RIGHT			124
-#define		DOWN			125
-#define		UP				126
+#ifndef FRACTOL_H
+# define FRACTOL_H
 
-#define		WIDTH			800
-#define		HEIGHT			600
+# include	"mlx/mlx.h"
+# include	<stdio.h>
+# include	<stdlib.h>
+# include	<math.h>
 
-#define		C				8
+# define		KEY_EXIT		17
+# define		KEY_ESC			53
+# define		KEY_PRESS		2
+# define		SCROLL_UP		4
+# define		SCROLL_DOWN		5
 
-typedef struct	s_complex
+# define		LEFT			123
+# define		RIGHT			124
+# define		DOWN			125
+# define		UP				126
+
+# define		WIDTH			800
+# define		HEIGHT			600
+
+# define		C				8
+
+typedef struct s_complex
 {
 	double		re;
 	double		im;
 }				t_complex;
 
-typedef	struct	s_img{
+typedef struct s_img
+{
 	void		*ptr;
 	char		*data;
 	int			size_l;
@@ -32,7 +49,8 @@ typedef	struct	s_img{
 	int			endian;
 }				t_img;
 
-typedef	struct	s_f{
+typedef struct s_f
+{
 	void		*ptr;
 	void		*win;
 	int			color_style;
@@ -44,8 +62,6 @@ typedef	struct	s_f{
 	t_complex	max;
 	t_complex	factor;
 }				t_f;
-
-// main.c
 
 // hooks.c
 void		hooks_loop(t_f *f);
@@ -71,13 +87,4 @@ void		interpolate(double zoom_rate, t_complex pos, t_f *f);
 void		put_pixel(int x, int y, int color, t_f *f);
 int			ft_strcmp(const char *s1, const char *s2);
 t_complex	init_complex(double re, double im);
-
-
-
-
-
-
-
-
-
-
+#endif

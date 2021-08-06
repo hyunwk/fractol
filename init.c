@@ -6,11 +6,19 @@
 /*   By: hyunwkim <hyunwkim@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/06 03:35:27 by hyunwkim          #+#    #+#             */
-/*   Updated: 2021/08/06 03:35:33 by hyunwkim         ###   ########.fr       */
+/*   Updated: 2021/08/06 12:58:34 by hyunwkim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
+
+void	init_fractal(t_f *f)
+{
+	f->max_iter = 100;
+	f->color_style = 0;
+	f->min = init_complex(-2.0, -1.0);
+	f->max = init_complex(1.0, 1.0);
+}
 
 int	check_argv(t_f *f, int argc, char **argv)
 {
@@ -47,18 +55,20 @@ int	init_window(t_f *f)
 	f->img.ptr = mlx_new_image(f->ptr, WIDTH, HEIGHT);
 	if (!f->img.ptr)
 		return (0);
-	f->img.data = mlx_get_data_addr(f->img.ptr, &f->img.bpp,\
-	&f->img.size_l, &f->img.endian);
+	f->img.data = mlx_get_data_addr(f->img.ptr,
+			&f->img.bpp, &f->img.size_l, &f->img.endian);
 	if (!f->img.data)
 		return (0);
-	mlx_string_put(f->ptr, f->win, 100, 100, 0x00FFFFFF, "C : change color");
 	return (1);
 }
 
-void	init_fractal(t_f *f)
+int	main(int argc, char **argv)
 {
-	f->max_iter = 100;
-	f->color_style = 0;
-	f->min = init_complex(-2.0, -1.0);
-	f->max = init_complex(1.0, 1.0);
+	t_f	f;
+
+	if (!init_window(&f) || !check_argv(&f, argc, argv))
+		return (0);
+	init_fractal(&f);
+	draw(&f);
+	hooks_loop(&f);
 }

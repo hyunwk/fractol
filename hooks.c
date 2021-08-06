@@ -6,13 +6,13 @@
 /*   By: hyunwkim <hyunwkim@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/06 03:34:32 by hyunwkim          #+#    #+#             */
-/*   Updated: 2021/08/06 03:34:38 by hyunwkim         ###   ########.fr       */
+/*   Updated: 2021/08/06 12:59:15 by hyunwkim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fractol.h"
 
-void hooks_loop(t_f *f)
+void	hooks_loop(t_f *f)
 {
 	mlx_hook(f->win, KEY_PRESS, 0, key_press, f);
 	mlx_hook(f->win, SCROLL_UP, 0, zoom, f);
@@ -40,7 +40,7 @@ int	close_window(int key)
 	exit(0);
 }
 
-void move(int key, t_f *f)
+void	move(int key, t_f *f)
 {
 	t_complex	factor;
 

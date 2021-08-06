@@ -6,7 +6,7 @@
 /*   By: hyunwkim <hyunwkim@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/06 03:36:24 by hyunwkim          #+#    #+#             */
-/*   Updated: 2021/08/06 03:36:31 by hyunwkim         ###   ########.fr       */
+/*   Updated: 2021/08/06 12:59:48 by hyunwkim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ void	draw(t_f *f)
 	}
 	mlx_put_image_to_window(f->ptr, f->win, f->img.ptr, 0, 0);
 }
+
 int	mandelbrot(t_f *f)
 {
 	int			iter;

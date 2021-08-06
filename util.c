@@ -6,7 +6,7 @@
 /*   By: hyunwkim <hyunwkim@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/06 03:38:18 by hyunwkim          #+#    #+#             */
-/*   Updated: 2021/08/06 03:38:27 by hyunwkim         ###   ########.fr       */
+/*   Updated: 2021/08/06 12:48:22 by hyunwkim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,6 @@ t_complex	init_complex(double re, double im)
 int	color_set(int iter, t_f *f)
 {
 	double	t;
-	int		red;
 	int		green;
 	int		blue;
 
@@ -49,26 +48,23 @@ int	color_set(int iter, t_f *f)
 	if (f->color_style == 0)
 	{
 		t = (double)iter / (double)f->max_iter;
-		red = (int)(9 * (1 - t) * pow (t, 3) * 255);
 		green = (int)(15 * pow((1 - t), 2) * pow(t, 2) * 255);
 		blue = (int)(8.5 * pow((1 - t), 3) * t * 255);
 	}
 	else if (f->color_style == 1)
 	{
-		red = sin(0.3 * (double)iter);
 		green = sin(0.3 * (double)iter + 3) * 127 + 128;
 		blue = sin(0.3 * (double)iter + 3) * 127 + 128;
 	}
 	else if (f->color_style == 2)
 	{
-		red = (((double)iter + 1) * 25) / 2;
-		green = 0;
 		blue = (((double)iter + 1) * 25) / 2;
+		return ((blue << 16) + blue);
 	}
-	return ((red << 16) + (green << 8) + blue);
+	return ((green << 8) + blue);
 }
 
-int		ft_strcmp(const char *s1, const char *s2)
+int	ft_strcmp(const char *s1, const char *s2)
 {
 	while (*s1 == *s2 && *s1 && *s2)
 	{
