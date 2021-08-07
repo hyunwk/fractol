@@ -6,11 +6,11 @@
 /*   By: hyunwkim <hyunwkim@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/06 03:35:27 by hyunwkim          #+#    #+#             */
-/*   Updated: 2021/08/06 12:58:34 by hyunwkim         ###   ########.fr       */
+/*   Updated: 2021/08/07 16:29:15 by hyunwkim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "fractol.h"
+#include "../inc/fractol.h"
 
 void	init_fractal(t_f *f)
 {

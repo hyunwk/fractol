@@ -6,16 +6,14 @@
 /*   By: hyunwkim <hyunwkim@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/06 03:36:24 by hyunwkim          #+#    #+#             */
-/*   Updated: 2021/08/06 12:59:48 by hyunwkim         ###   ########.fr       */
+/*   Updated: 2021/08/07 16:29:22 by hyunwkim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "fractol.h"
+#include "../inc/fractol.h"
 
 void	draw(t_f *f)
 {
-	int		iter;
-	int		color;
 	int		x;
 	int		y;
 

@@ -6,7 +6,7 @@
 #    By: hyunwkim <hyunwkim@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2021/08/07 16:01:27 by hyunwkim          #+#    #+#              #
-#    Updated: 2021/08/07 16:49:06 by hyunwkim         ###   ########.fr        #
+#    Updated: 2021/08/07 16:55:53 by hyunwkim         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -46,6 +46,6 @@ clean :
 	rm -f $(OBJS) $(OBJS_BONUS)
 
 fclean : clean
-	rm -f $(NAME)
+	rm -f $(NAME) $(NAME_BONUS)
 
 re : fclean all

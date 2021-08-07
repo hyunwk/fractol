@@ -6,11 +6,11 @@
 /*   By: hyunwkim <hyunwkim@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/06 03:38:18 by hyunwkim          #+#    #+#             */
-/*   Updated: 2021/08/06 12:48:22 by hyunwkim         ###   ########.fr       */
+/*   Updated: 2021/08/07 16:51:35 by hyunwkim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "fractol.h"
+#include "../inc/fractol.h"
 
 void	interpolate(double zoom_rate, t_complex pos, t_f *f)
 {
@@ -56,7 +56,7 @@ int	color_set(int iter, t_f *f)
 		green = sin(0.3 * (double)iter + 3) * 127 + 128;
 		blue = sin(0.3 * (double)iter + 3) * 127 + 128;
 	}
-	else if (f->color_style == 2)
+	else
 	{
 		blue = (((double)iter + 1) * 25) / 2;
 		return ((blue << 16) + blue);

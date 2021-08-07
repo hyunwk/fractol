@@ -1,30 +1,30 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   hooks.c                                            :+:      :+:    :+:   */
+/*   hook.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: hyunwkim <hyunwkim@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2021/08/06 03:34:32 by hyunwkim          #+#    #+#             */
-/*   Updated: 2021/08/06 12:59:15 by hyunwkim         ###   ########.fr       */
+/*   Created: 2021/08/06 13:36:16 by hyunwkim          #+#    #+#             */
+/*   Updated: 2021/08/07 17:01:04 by hyunwkim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "fractol.h"
+#include "../inc/fractol.h"
 
 void	hooks_loop(t_f *f)
 {
 	mlx_hook(f->win, KEY_PRESS, 0, key_press, f);
 	mlx_hook(f->win, SCROLL_UP, 0, zoom, f);
 	mlx_hook(f->win, SCROLL_DOWN, 0, zoom, f);
-	mlx_hook(f->win, KEY_EXIT, 0, close_window, 0);
+	mlx_hook(f->win, KEY_EXIT, 0, close_window, f);
 	mlx_loop(f->ptr);
 }
 
 int	key_press(int key, t_f *f)
 {
 	if (key == KEY_ESC)
-		exit(0);
+		close_window(f);
 	else if (key == C)
 	{
 		f->color_style = (f->color_style + 1) % 3;
@@ -35,8 +35,9 @@ int	key_press(int key, t_f *f)
 	return (0);
 }
 
-int	close_window(int key)
+int	close_window(t_f *f)
 {
+	mlx_destroy_image(f->ptr, f->win);
 	exit(0);
 }
 

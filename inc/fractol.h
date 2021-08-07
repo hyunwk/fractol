@@ -6,14 +6,14 @@
 /*   By: hyunwkim <hyunwkim@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2021/08/06 13:00:19 by hyunwkim          #+#    #+#             */
-/*   Updated: 2021/08/06 13:23:38 by hyunwkim         ###   ########.fr       */
+/*   Updated: 2021/08/07 16:28:51 by hyunwkim         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FRACTOL_H
 # define FRACTOL_H
 
-# include	"mlx/mlx.h"
+# include	"../mlx/mlx.h"
 # include	<stdio.h>
 # include	<stdlib.h>
 # include	<math.h>
@@ -63,13 +63,6 @@ typedef struct s_f
 	t_complex	factor;
 }				t_f;
 
-// hooks.c
-void		hooks_loop(t_f *f);
-int			close_window(int key);
-int			key_press(int key, t_f *f);
-void		move(int key, t_f *f);
-int			zoom(int key, int x, int y, t_f *f);
-
 // init.c
 void		init_fractal(t_f *f);
 int			init_window(t_f *f);
@@ -80,6 +73,13 @@ void		draw(t_f *f);
 int			julia(t_f *f);
 int			tricorn(t_f *f);
 int			mandelbrot(t_f *f);
+
+// hook.c
+void		hooks_loop(t_f *f);
+int			close_window(t_f *f);
+int			key_press(int key, t_f *f);
+void		move(int key, t_f *f);
+int			zoom(int key, int x, int y, t_f *f);
 
 //util.c
 int			color_set(int iter, t_f *f);
