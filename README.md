@@ -13,7 +13,13 @@
 
 2. Run it with `./fractol [fractal]`. Possible fractals are: `mandelbrot`, `julia`, `tricorn`
 
-# mandelbrot 
-<img src="https://user-images.githubusercontent.com/34102064/132691065-4128c3b4-4b1a-4155-90ef-bde8c34fb388.png" width="300" height="300"/>
-![screenshot](https://user-images.githubusercontent.com/34102064/132690257-bf360f43-884b-49cf-9d0d-5057d8cab2b0.png)
-![screenshot](https://user-images.githubusercontent.com/34102064/132690458-bc0f1998-7190-4bd0-b1c3-9344e1c2ca42.png)
+### Mandelbrot 
+<img src="https://user-images.githubusercontent.com/34102064/132691065-4128c3b4-4b1a-4155-90ef-bde8c34fb388.png" width="700" height="700"/>
+<br>
+
+### Julia 
+<img src="https://user-images.githubusercontent.com/34102064/132690257-bf360f43-884b-49cf-9d0d-5057d8cab2b0.png" width="700" height="700"/>
+<br>
+
+### Tricorn 
+<img src="https://user-images.githubusercontent.com/34102064/132690458-bc0f1998-7190-4bd0-b1c3-9344e1c2ca42.png" width="700" height="700"/>
